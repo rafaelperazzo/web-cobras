@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db_cobras:
+     image: mariadb:latest
+     restart: always
+     command: mysqld --sql_mode=""
+     environment:
+       MYSQL_ROOT_PASSWORD: ***SENHA***
+       MYSQL_DATABASE: cobras
+       MYSQL_USER: cobras
+       MYSQL_PASSWORD: ***SENHA***
+       TZ: America/Fortaleza
+     volumes:
+       - ./mysql:/var/lib/mysql
+       - ./share:/share
+     networks:
+       - web
+
+  cobras:
+    image: cobras:cariri
+    build: .
+    volumes:
+      - ./flask:/flask
+    environment:
+       TZ: America/Fortaleza
+    labels:
+       - "traefik.enable=true"
+       - "traefik.http.routers.cobras.rule=PathPrefix(`/cobras`)"
+       - "traefik.http.routers.cobras.tls=true"
+       - "traefik.http.routers.cobras.tls.certresolver=certificado"
+       - "traefik.http.routers.cobras.entrypoints=websecure"
+    restart: always
+    #ports:
+    #  - "8000:80"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
